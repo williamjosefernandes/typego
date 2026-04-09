@@ -1,0 +1,8 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = env("DB_RELATIONAL_DRIVER")
+  url      = env("DATABASE_URL")
+}
