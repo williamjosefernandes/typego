@@ -1,0 +1,13 @@
+{
+  "name": "typego-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "typego dev",
+    "build": "typego build",
+    "start": "typego start"
+  },
+  "dependencies": {
+    "typego": "file:.."
+  }
+}

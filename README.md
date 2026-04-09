@@ -173,7 +173,7 @@ export class UsersService {
 export class UsersController {
 
   constructor(
-    private usersService: UsersService
+          private usersService: UsersService
   ) {}
 
 }
@@ -234,7 +234,7 @@ O objetivo do **TypeGo** é criar:
 ## V3
 
 * ORM
-  n- Auth
+  * Auth
 * Cache
 
 ## V4
