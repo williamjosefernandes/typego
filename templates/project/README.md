@@ -32,7 +32,7 @@ The default health endpoint is `GET /health/`.
 |-----------------------|-----------------------------------|------------|
 | `PORT`                | HTTP server port                  | `3000`     |
 | `NODE_ENV`            | Runtime environment               | `development` |
-| `DATABASE_URL`        | Full database connection URL      | —          |
+| `DATABASE_URL`        | Full database connection URL (required) | — |
 | `DB_RELATIONAL_DRIVER`| Prisma datasource provider        | `postgres` |
 
 ## Database
