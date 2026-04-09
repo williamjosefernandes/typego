@@ -7,3 +7,12 @@ TypeGo has two runtime layers:
 
 The CLI build command emits Go code in `generated/go`.
 
+Runtime TypeScript supports:
+
+- DI resolution via `static inject` or `@Injectable({ inject: [...] })`
+- Module bootstrap via `createTypeGoServer({ module: AppModule })`
+- Middleware chain order: global -> controller (`@Use`) -> route (`@Use`)
+- Provider styles: class providers, `useValue`, `useFactory`, `useClass`
+- Module composition via `@Module({ imports: [...] })`
+- Configuration module via `createConfigModule()` and `ConfigService`
+

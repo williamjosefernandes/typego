@@ -12,8 +12,18 @@ export interface ParsedController {
   routes: ParsedRoute[];
 }
 
-const controllerRegex = /@Controller\((['"`])(?<path>.*?)\1\)\s*export\s+class\s+(?<name>\w+)/s;
-const routeRegex = /@(Get|Post|Put|Patch|Delete)\((['"`])(?<path>.*?)\2\)\s*(?:async\s+)?(?<handler>\w+)\s*\(/g;
+const controllerRegex = /@Controller(?:\((?<args>[^)]*)\))?\s*export\s+class\s+(?<name>\w+)/s;
+const routeRegex = /@(Get|Post|Put|Patch|Delete)\((?<args>[^)]*)\)\s*(?:async\s+)?(?<handler>\w+)\s*\(/g;
+
+function parseDecoratorPath(rawArgs: string | undefined): string {
+  const args = (rawArgs ?? "").trim();
+  if (!args) {
+    return "";
+  }
+
+  const match = /^(['"`])(?<path>[\s\S]*?)\1$/.exec(args);
+  return match?.groups?.path ?? "";
+}
 
 function findMatchingBrace(source: string, openBraceIndex: number): number {
   let depth = 0;
@@ -97,7 +107,7 @@ export function parseControllerSource(source: string): ParsedController | null {
     const methodBody = extractMethodBody(source, routeMatch.groups.handler, routeMatch.index);
     routes.push({
       method: routeMatch[1].toUpperCase(),
-      path: routeMatch.groups.path,
+      path: parseDecoratorPath(routeMatch.groups.args),
       handlerName: routeMatch.groups.handler,
       returnExpression: extractReturnExpression(methodBody)
     });
@@ -106,7 +116,7 @@ export function parseControllerSource(source: string): ParsedController | null {
 
   return {
     name: controllerMatch.groups.name,
-    basePath: controllerMatch.groups.path,
+    basePath: parseDecoratorPath(controllerMatch.groups.args),
     injections: extractInjections(source),
     routes
   };

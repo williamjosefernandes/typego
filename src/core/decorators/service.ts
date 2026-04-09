@@ -1,6 +1,6 @@
-import { Injectable } from "./injectable.js";
+import { Injectable, type InjectableOptions } from "./injectable.js";
 
-export function Service(): ClassDecorator {
-  return Injectable();
+export function Service(options: InjectableOptions = {}): ClassDecorator {
+  return Injectable(options);
 }
 

@@ -1,7 +1,7 @@
 import type { GoControllerIR } from "./transformer.js";
 
 function escapeGoStringLiteral(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"");
+  return value.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
 }
 
 function buildHandlerBody(functionName: string, responseBody: string): string {
@@ -10,17 +10,28 @@ function buildHandlerBody(functionName: string, responseBody: string): string {
 }
 
 function buildRouteRegistrations(controllers: GoControllerIR[]): string {
-  return controllers
-    .flatMap((controller) =>
-      controller.routes.map(
-        (route) =>
-          `\tmux.HandleFunc(\"${route.path}\", func(w http.ResponseWriter, r *http.Request) {\n\t\tif r.Method != \"${route.method}\" {\n\t\t\thttp.Error(w, \"method not allowed\", http.StatusMethodNotAllowed)\n\t\t\treturn\n\t\t}\n\t\t${route.functionName}(w, r)\n\t})`
-      )
-    )
+  const routesByPath = new Map<string, Array<{ method: string; functionName: string }>>();
+
+  for (const controller of controllers) {
+    for (const route of controller.routes) {
+      const existing = routesByPath.get(route.path) ?? [];
+      existing.push({ method: route.method, functionName: route.functionName });
+      routesByPath.set(route.path, existing);
+    }
+  }
+
+  return [...routesByPath.entries()]
+    .map(([routePath, handlers]) => {
+      const methodSwitch = handlers
+        .map((entry) => `\t\tcase \"${entry.method}\":\n\t\t\t${entry.functionName}(w, r)\n\t\t\treturn`)
+        .join("\n");
+
+      return `\tmux.HandleFunc(\"${routePath}\", func(w http.ResponseWriter, r *http.Request) {\n\t\tswitch r.Method {\n${methodSwitch}\n\t\tdefault:\n\t\t\thttp.Error(w, \"method not allowed\", http.StatusMethodNotAllowed)\n\t\t}\n\t})`;
+    })
     .join("\n\n");
 }
 
-export function generateGoSource(controllers: GoControllerIR[]): string {
+export function generateGoSource(controllers: GoControllerIR[], defaultPort = 8080): string {
   const handlers = controllers
     .flatMap((controller) =>
       controller.routes.map((route) => buildHandlerBody(route.functionName, route.responseBody))
@@ -32,18 +43,26 @@ export function generateGoSource(controllers: GoControllerIR[]): string {
   return `package main
 
 import (
-\t\"log\"
-\t\"net/http\"
+\t"fmt"
+\t"log"
+\t"net/http"
+\t"os"
 )
 
 ${handlers}
 
 func main() {
+\tport := os.Getenv("PORT")
+\tif port == "" {
+\t\tport = "${defaultPort}"
+\t}
+\taddr := fmt.Sprintf(":%s", port)
+
 \tmux := http.NewServeMux()
 ${routeRegistrations}
 
-\tlog.Println(\"TypeGo Go runtime listening on :8080\")
-\tif err := http.ListenAndServe(\":8080\", mux); err != nil {
+\tlog.Printf("TypeGo Go runtime listening on %s", addr)
+\tif err := http.ListenAndServe(addr, mux); err != nil {
 \t\tlog.Fatal(err)
 \t}
 }

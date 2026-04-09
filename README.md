@@ -31,7 +31,7 @@ Você escreve em TypeScript → TypeGo converte para Go → Gera binário nativo
 TypeScript → TypeGo Compiler → Go → Binary
 ```
 
-Você escreve:
+Exemplo de Controller:
 
 ```typescript
 @Controller('/users')
@@ -75,6 +75,7 @@ Resultado:
 * WebSocket
 * gRPC
 * Cache nativo
+* ORM integrado
 * CLI poderosa
 * Hot Reload
 * Build ultra rápido
@@ -92,7 +93,34 @@ Resultado:
 
 ---
 
-# 📦 Instalação (Em desenvolvimento)
+# 📋 Pré-requisitos
+
+Antes de utilizar o **TypeGo**, instale:
+
+### Obrigatórios
+
+* Node.js >= 20.x
+* npm >= 9.x (ou pnpm / yarn)
+* Go >= 1.24
+* TypeScript >= 5.x
+
+### Recomendados
+
+* Git
+* VS Code
+* Docker (para builds isolados)
+
+Verifique:
+
+```bash
+node -v
+npm -v
+go version
+```
+
+---
+
+# 📦 Instalação
 
 ```bash
 npm install -g typego
@@ -110,7 +138,7 @@ Rodar projeto:
 typego dev
 ```
 
-Build para produção:
+Build produção:
 
 ```bash
 typego build
@@ -145,17 +173,13 @@ export class HelloController {
 
   @Get()
   hello() {
-    return {
-      message: "Hello TypeGo"
-    }
+    return { message: "Hello TypeGo" }
   }
 
 }
 ```
 
----
-
-# 🧩 Dependency Injection
+## Dependency Injection
 
 ```typescript
 @Injectable()
@@ -166,16 +190,10 @@ export class UsersService {
   }
 
 }
-```
 
-```typescript
 @Controller('/users')
 export class UsersController {
-
-  constructor(
-          private usersService: UsersService
-  ) {}
-
+  constructor(private usersService: UsersService) {}
 }
 ```
 
@@ -190,64 +208,66 @@ typego build
 typego generate controller users
 typego generate service users
 typego generate module users
+typego generate middleware auth
 ```
 
 ---
 
-# 🧠 Objetivo
+# 🗺️ Roadmap Completo
 
-O objetivo do **TypeGo** é criar:
-
-* Backend extremamente rápido
-* Baixo consumo de memória
-* Alta escalabilidade
-* Desenvolvimento simples
-
----
-
-# 🌎 Casos de Uso
-
-* APIs de alta performance
-* Microservices
-* SaaS escalável
-* Backend para IA
-* Sistemas corporativos
-* Serverless
-
----
-
-# 🗺️ Roadmap
-
-## V1
+## V1 - Essentials
 
 * Compiler TypeScript → Go
 * HTTP Server
 * Controllers
 * CLI
+* Modules
+* Decorators (@Controller, @Service, @Module, @Injectable)
+* Routing básico
 
-## V2
+## V2 - Core Features
 
-* Dependency Injection
-* Middleware
-* Services
+* Dependency Injection avançado
+* Middleware global e por rota
+* Services e Providers
+* Configuration Module
+* Environment management
+* Logger integrado
 
-## V3
+## V3 - Database & Auth
 
-* ORM
-  * Auth
-* Cache
+* ORM integrado (relacional e NoSQL)
+* Authentication & Authorization (JWT, OAuth2)
+* Cache nativo
+* Validation pipe
+* Exception filters
 
-## V4
+## V4 - Microservices & Protocols
 
-* Microservices
 * gRPC
-* Queue
+* Event-based Queue
+* Pub/Sub messaging
+* Microservices architecture support
+* Async communication patterns
+
+## V5 - Web & Realtime
+
+* WebSocket server e client
+* Real-time events
+* Broadcasting
+* Server-sent events
+
+## V6 - Advanced
+
+* GraphQL support
+* Jobs & Scheduling
+* Advanced metrics & Monitoring
+* Swagger/OpenAPI documentation generator
+* Testing utilities (unit, integration, e2e)
 
 ---
 
 # 🤝 Contribuição
-
-Contribuições são bem-vindas!
 
 1. Fork do projeto
 2. Crie sua branch

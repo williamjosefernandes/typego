@@ -3,6 +3,8 @@ import fs from "node:fs";
 import { parseControllerSource, type ParsedController } from "./ast-parser.js";
 import { buildGoIR } from "./transformer.js";
 import { generateGoSource } from "./go-generator.js";
+import { loadEnvironment } from "../config/env.js";
+import { loadProjectConfig } from "../config/project-config.js";
 import { listFilesRecursive, writeFileSafe } from "../utils/fs.js";
 import { logger } from "../utils/logger.js";
 
@@ -147,20 +149,43 @@ function resolveControllerResponses(
 }
 
 export function compileProject(projectRoot: string): CompileResult {
-  const srcDir = path.resolve(projectRoot, "src");
+  const config = loadProjectConfig(projectRoot);
+  loadEnvironment(projectRoot, config.envFile);
+
+  const srcDir = path.resolve(projectRoot, config.srcDir);
   const controllerFiles = listFilesRecursive(srcDir, ".controller.ts");
   const tsFiles = listFilesRecursive(srcDir, ".ts");
 
+  if (tsFiles.length === 0) {
+    throw new Error(`No TypeScript files found in ${srcDir}.`);
+  }
+
+  if (controllerFiles.length === 0) {
+    logger.warn(`No controllers found in ${srcDir}. Generating empty Go server.`);
+  }
+
   const classMethodMap: ClassMethodJsonMap = {};
   for (const filePath of tsFiles) {
-    const source = fs.readFileSync(filePath, "utf8");
-    mergeClassMaps(classMethodMap, collectClassMethodJsonBySource(source));
+    try {
+      const source = fs.readFileSync(filePath, "utf8");
+      mergeClassMaps(classMethodMap, collectClassMethodJsonBySource(source));
+    } catch (error) {
+      throw new Error(
+        `Failed to read or parse '${filePath}': ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 
   const parsedControllers = controllerFiles
     .map((filePath) => {
-      const source = fs.readFileSync(filePath, "utf8");
-      return parseControllerSource(source);
+      try {
+        const source = fs.readFileSync(filePath, "utf8");
+        return parseControllerSource(source);
+      } catch (error) {
+        throw new Error(
+          `Failed to parse controller '${filePath}': ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
     })
     .filter((item): item is NonNullable<typeof item> => item !== null);
 
@@ -169,9 +194,9 @@ export function compileProject(projectRoot: string): CompileResult {
   );
 
   const ir = resolvedControllers.map((controller) => buildGoIR(controller));
-  const output = generateGoSource(ir);
+  const output = generateGoSource(ir, config.port ?? 8080);
 
-  const outputFile = path.resolve(projectRoot, "generated", "go", "main.go");
+  const outputFile = path.resolve(projectRoot, config.outDir, "main.go");
   writeFileSafe(outputFile, output);
 
   logger.info(`Go code generated at ${outputFile}`);

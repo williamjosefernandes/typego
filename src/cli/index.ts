@@ -13,7 +13,7 @@ Commands:
   typego build
   typego dev
   typego start
-  typego generate <controller|service|module> <name>
+  typego generate <controller|service|module|middleware> <name> [feature]
 `);
 }
 
