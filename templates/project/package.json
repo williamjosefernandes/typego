@@ -5,10 +5,16 @@
   "scripts": {
     "dev": "typego dev",
     "build": "typego build",
-    "start": "typego start"
+    "start": "typego start",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "typego": "latest"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
   }
 }
 

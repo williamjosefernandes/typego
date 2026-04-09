@@ -23,4 +23,8 @@ export * from "./config/config.service.js";
 export * from "./config/config.module.js";
 export * from "./utils/logger.js";
 export * from "./compiler/compiler.js";
+export * from "./plugins/auth/index.js";
+export * from "./plugins/cache/index.js";
+export * from "./plugins/database/index.js";
+export * from "./plugins/prisma/index.js";
 
